@@ -6,22 +6,19 @@ const prisma = new PrismaClient({ adapter: prismaAdapter });
 
 async function main() {
   const email = 'admin@habita.com';
-  const existing = await prisma.corretores.findUnique({ where: { email } });
 
-  if (existing) {
-    console.log('Corretor administrador já existe:', email);
-    return;
-  }
-
-  await prisma.corretores.create({
-    data: {
+  await prisma.corretores.upsert({
+    where: { email },
+    update: { perfil: 'ADMIN' },
+    create: {
       nome: 'Administrador Habita',
       email,
       senha: await ArgonCrypto.hash('habita123'),
+      perfil: 'ADMIN',
     },
   });
 
-  console.log('Corretor administrador criado: admin@habita.com / habita123');
+  console.log('Administrador disponível: admin@habita.com / habita123');
 }
 
 main()

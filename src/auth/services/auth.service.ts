@@ -1,4 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PerfilCorretor } from '@src/common/contracts/enums/perfil-corretor.enum';
 import { ArgonCrypto } from '@src/common/utils';
 import * as jwt from 'jsonwebtoken';
 import { LoginInput } from '../contracts/inputs/login.input';
@@ -9,6 +10,7 @@ type JwtPayload = {
   sub: number;
   email: string;
   nome: string;
+  perfil: PerfilCorretor;
 };
 
 @Injectable()
@@ -34,6 +36,7 @@ export class AuthService {
       sub: corretor.id,
       email: corretor.email,
       nome: corretor.nome,
+      perfil: corretor.perfil as PerfilCorretor,
     });
 
     return {
@@ -42,6 +45,7 @@ export class AuthService {
         id: corretor.id,
         nome: corretor.nome,
         email: corretor.email,
+        perfil: corretor.perfil as PerfilCorretor,
       },
     };
   }

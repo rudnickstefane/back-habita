@@ -6,14 +6,20 @@ datasource db {
   provider = "postgresql"
 }
 
+enum PerfilCorretor {
+  ADMIN
+  CORRETOR
+}
+
 /// Corretor autenticável da plataforma Habita.
 model Corretores {
-  id        Int       @id @default(autoincrement())
-  nome      String    @db.VarChar(120)
-  email     String    @unique @db.VarChar(150)
-  senha     String    @db.VarChar(255)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
+  id        Int             @id @default(autoincrement())
+  nome      String          @db.VarChar(120)
+  email     String          @unique @db.VarChar(150)
+  senha     String          @db.VarChar(255)
+  perfil    PerfilCorretor  @default(CORRETOR)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime?       @updatedAt
 
   @@index([email])
 }

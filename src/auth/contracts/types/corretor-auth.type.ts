@@ -1,4 +1,5 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { PerfilCorretor } from '@src/common/contracts/enums/perfil-corretor.enum';
 
 @ObjectType({ description: 'Dados públicos do corretor autenticado.' })
 export class CorretorAuthType {
@@ -10,4 +11,7 @@ export class CorretorAuthType {
 
   @Field(() => String)
   email: string;
+
+  @Field(() => PerfilCorretor)
+  perfil: PerfilCorretor;
 }

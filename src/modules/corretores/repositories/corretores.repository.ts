@@ -18,6 +18,7 @@ export class CorretoresRepository {
         id: true,
         nome: true,
         email: true,
+        perfil: true,
         createdAt: true,
       },
     });
@@ -29,11 +30,13 @@ export class CorretoresRepository {
         nome: data.nome.trim(),
         email: data.email.toLowerCase().trim(),
         senha: data.senha,
+        perfil: 'CORRETOR',
       },
       select: {
         id: true,
         nome: true,
         email: true,
+        perfil: true,
         createdAt: true,
       },
     });

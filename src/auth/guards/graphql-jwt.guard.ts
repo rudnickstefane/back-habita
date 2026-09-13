@@ -35,6 +35,7 @@ export class GraphQLJWTGuard implements CanActivate {
       id: corretor.id,
       nome: corretor.nome,
       email: corretor.email,
+      perfil: corretor.perfil,
       sub: corretor.id,
     };
 
