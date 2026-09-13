@@ -24,8 +24,7 @@
       "@health-check/*": ["src/health-check/*"],
       "@config/*": ["src/config/*"],
       "@test/*": ["test/*"],
-      "@utils/*": ["src/utils/*"],
-      "@prisma": ["src/generated/prisma"]
+      "@utils/*": ["src/utils/*"]
     }
   },
   "exclude": ["node_modules", "dist"]

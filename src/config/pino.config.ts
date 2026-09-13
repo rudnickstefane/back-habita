@@ -1,35 +1,12 @@
 import { Params } from 'nestjs-pino';
-import pinoElastic from 'pino-elasticsearch';
-import { multistream } from 'pino-multi-stream';
-import { config as elasticConfig } from './elastic.config';
 
 export function parseLoggerConfig(override?: Params): Params {
-  const { LOGGER_LEVEL: envLoggerLevel = 'info', LOGGER_TARGET: envLoggerTarget } = process.env;
+  const { LOGGER_LEVEL: envLoggerLevel = 'info' } = process.env;
 
-  let stream;
-
-  if (envLoggerTarget === 'elasticsearch') {
-    stream = multistream([
-      {
-        stream: pinoElastic({
-          index: function (logTime) {
-            return `${elasticConfig.log.indexPrefix}-${logTime.substring(0, 10)}`;
-          },
-          node: elasticConfig.log.host,
-          'flush-bytes': Number(process.env.LOG_FLUSH_BYTES) || 1000,
-          'es-version': Number(process.env.ELASTIC_VERSION) || 7,
-        }),
-      },
-      {
-        stream: process.stdout,
-      },
-    ]);
-  }
-
-  const pinoConfig: any = {
+  const pinoConfig: Record<string, unknown> = {
     enabled: process.env.NODE_ENV !== 'test',
     formatters: {
-      level(severity: any) {
+      level(severity: string) {
         return { severity };
       },
     },
@@ -43,7 +20,7 @@ export function parseLoggerConfig(override?: Params): Params {
     timestamp: () => `,"@timestamp":"${new Date().toISOString()}"`,
   };
 
-  if (process.env.NODE_ENV === 'development' && envLoggerTarget !== 'elasticsearch') {
+  if (process.env.NODE_ENV === 'development') {
     pinoConfig.transport = {
       target: 'pino-pretty',
       options: {
@@ -57,7 +34,7 @@ export function parseLoggerConfig(override?: Params): Params {
   }
 
   return {
-    pinoHttp: [pinoConfig, stream],
+    pinoHttp: pinoConfig,
     ...override,
   };
 }
