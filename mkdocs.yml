@@ -1,0 +1,8 @@
+site_name: 'Template Nest JS'
+
+nav:
+  - Home: index.md
+  - Template: TEMPLATE.md
+
+plugins:
+  - techdocs-core

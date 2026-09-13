@@ -1,0 +1,70 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+"""Dados públicos do corretor autenticado."""
+type CorretorAuthType {
+  id: Int!
+  nome: String!
+  email: String!
+}
+
+"""Resultado da autenticação JWT."""
+type LoginType {
+  """Token JWT de acesso."""
+  token: String!
+  corretor: CorretorAuthType!
+}
+
+"""Corretor cadastrado na Habita."""
+type CorretorType {
+  id: Int!
+  nome: String!
+  email: String!
+  createdAt: DateTime!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Query {
+  """Lista os corretores cadastrados."""
+  corretores: [CorretorType!]!
+}
+
+type Mutation {
+  """Autentica um corretor e retorna o token JWT."""
+  login(
+    """Credenciais de acesso."""
+    data: LoginInput!
+  ): LoginType!
+
+  """Cadastra um novo corretor."""
+  criarCorretor(
+    """Dados do corretor."""
+    data: CreateCorretorInput!
+  ): CorretorType!
+}
+
+"""Credenciais de acesso do corretor."""
+input LoginInput {
+  """E-mail do corretor."""
+  email: String!
+
+  """Senha do corretor."""
+  senha: String!
+}
+
+"""Dados para cadastro de um corretor."""
+input CreateCorretorInput {
+  """Nome completo do corretor."""
+  nome: String!
+
+  """E-mail único do corretor."""
+  email: String!
+
+  """Senha que será armazenada com hash."""
+  senha: String!
+}

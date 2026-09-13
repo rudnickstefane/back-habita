@@ -1,0 +1,32 @@
+version: '3.4'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    image: habita
+    container_name: habita
+    command: sh -c "pnpm install && pnpm start:dev"
+    # 1 - slow command for first docker-compose up, when your external volume overwrite the container node_modules folder
+    # command: sh -c "pnpm install && pnpm start"
+    # 2 - slow command with migrations:
+    # command: sh -c "pnpm install && make migrate && pnpm start"
+    # 3 - fast command, after previously installed node_modules (option 1)
+    # command: sh -c "pnpm start:dev"
+    # 4 - no command, run all commands inside the container
+    # tty: true
+    restart: unless-stopped
+    ports:
+      - 3000:3000 # app port
+      # - 9229:9229 # debugger port
+    volumes:
+      - .:/app
+    working_dir: '/app'
+    env_file: .env
+
+networks:
+  default:
+    external:
+      name: projetos_micro_servicos
