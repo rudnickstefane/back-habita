@@ -7,7 +7,7 @@ import { config as pinoConfig } from '@config/pino.config';
 import { Logger, LoggerModule } from 'nestjs-pino';
 import { AuthModule } from './auth/auth.module';
 import { HealthCheckModule } from './health-check/health-check.module';
-import { CorretoresModule } from './modules';
+import { CorretoresModule, ProprietariosModule } from './modules';
 import { PrismaService } from './prisma.service';
 
 @Module({
@@ -18,6 +18,7 @@ import { PrismaService } from './prisma.service';
     HealthCheckModule,
     AuthModule,
     CorretoresModule,
+    ProprietariosModule,
   ],
   providers: [PrismaService, Logger],
 })
