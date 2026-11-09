@@ -2,18 +2,40 @@ import { config } from 'dotenv';
 
 config();
 
+import multipart from '@fastify/multipart';
+import fastifyStatic from '@fastify/static';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { AppModule } from '@src/app.module';
+import { mkdirSync } from 'fs';
 import { Logger } from 'nestjs-pino';
+import { join } from 'path';
 import { config as serverConfig } from './config/server.config';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter({ bodyLimit: 10 * 1024 * 1024 }),
+  );
   const logger = app.get(Logger);
   app.useLogger(logger);
   app.useGlobalPipes(new ValidationPipe());
+
+  const uploadsRoot = join(process.cwd(), 'uploads');
+  mkdirSync(join(uploadsRoot, 'fotos'), { recursive: true });
+
+  await app.register(multipart, {
+    limits: {
+      fileSize: 8 * 1024 * 1024,
+      files: 12,
+    },
+  });
+
+  await app.register(fastifyStatic, {
+    root: uploadsRoot,
+    prefix: '/uploads/',
+  });
 
   const allowedOrigins = [
     process.env.FRONTEND_URL?.trim(),

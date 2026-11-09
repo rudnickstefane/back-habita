@@ -8,7 +8,7 @@ export class AuthResolver {
   constructor(private readonly service: AuthService) {}
 
   @Mutation(() => LoginType, {
-    description: 'Autentica um corretor e retorna o token JWT.',
+    description: 'Autentica administrador, corretor ou proprietário e retorna o token JWT.',
   })
   login(
     @Args('data', {

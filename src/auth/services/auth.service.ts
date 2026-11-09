@@ -1,17 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PerfilCorretor } from '@src/common/contracts/enums/perfil-corretor.enum';
+import { PerfilAcesso } from '@src/common/contracts/enums/perfil-acesso.enum';
 import { ArgonCrypto } from '@src/common/utils';
 import * as jwt from 'jsonwebtoken';
 import { LoginInput } from '../contracts/inputs/login.input';
+import { JwtPayload } from '../contracts/types/auth-user.type';
 import { LoginType } from '../contracts/types/login.type';
 import { AuthRepository } from '../repositories/auth.repository';
-
-type JwtPayload = {
-  sub: number;
-  email: string;
-  nome: string;
-  perfil: PerfilCorretor;
-};
 
 @Injectable()
 export class AuthService {
@@ -25,29 +19,31 @@ export class AuthService {
       throw new UnauthorizedException('JWT_SECRET não configurado.');
     }
 
-    const corretor = await this.repository.findByEmail(data.email);
-    const senhaValida = corretor ? await ArgonCrypto.verifyPassword(data.senha, corretor.senha) : false;
-
-    if (!corretor || !senhaValida) {
-      throw new UnauthorizedException('E-mail ou senha inválidos.');
+    const corretor = await this.repository.findCorretorByEmail(data.email);
+    if (corretor && (await ArgonCrypto.verifyPassword(data.senha, corretor.senha))) {
+      const perfil = corretor.perfil as PerfilAcesso;
+      return this.buildLogin({
+        sub: corretor.id,
+        email: corretor.email,
+        nome: corretor.nome,
+        perfil,
+      });
     }
 
-    const token = this.signToken({
-      sub: corretor.id,
-      email: corretor.email,
-      nome: corretor.nome,
-      perfil: corretor.perfil as PerfilCorretor,
-    });
+    const proprietario = await this.repository.findProprietarioByEmail(data.email);
+    if (
+      proprietario?.senha &&
+      (await ArgonCrypto.verifyPassword(data.senha, proprietario.senha))
+    ) {
+      return this.buildLogin({
+        sub: proprietario.id,
+        email: proprietario.email,
+        nome: proprietario.nome,
+        perfil: PerfilAcesso.PROPRIETARIO,
+      });
+    }
 
-    return {
-      token,
-      corretor: {
-        id: corretor.id,
-        nome: corretor.nome,
-        email: corretor.email,
-        perfil: corretor.perfil as PerfilCorretor,
-      },
-    };
+    throw new UnauthorizedException('E-mail ou senha inválidos.');
   }
 
   validateToken(token: string): JwtPayload {
@@ -60,6 +56,18 @@ export class AuthService {
     } catch {
       throw new UnauthorizedException('O token fornecido é inválido ou expirou.');
     }
+  }
+
+  private buildLogin(payload: JwtPayload): LoginType {
+    return {
+      token: this.signToken(payload),
+      usuario: {
+        id: payload.sub,
+        nome: payload.nome,
+        email: payload.email,
+        perfil: payload.perfil,
+      },
+    };
   }
 
   private signToken(payload: JwtPayload): string {

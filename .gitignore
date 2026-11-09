@@ -2,6 +2,8 @@
 /dist
 /node_modules
 .pnpm-store/
+/uploads/fotos/*
+!/uploads/fotos/.gitkeep
 
 .env
 .local

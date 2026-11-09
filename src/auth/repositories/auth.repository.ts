@@ -5,14 +5,26 @@ import { PrismaService } from '@src/prisma.service';
 export class AuthRepository {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-  findByEmail(email: string) {
+  findCorretorByEmail(email: string) {
     return this.prisma.corretores.findUnique({
       where: { email: email.toLowerCase().trim() },
     });
   }
 
-  findById(id: number) {
+  findCorretorById(id: number) {
     return this.prisma.corretores.findUnique({
+      where: { id },
+    });
+  }
+
+  findProprietarioByEmail(email: string) {
+    return this.prisma.proprietarios.findUnique({
+      where: { email: email.toLowerCase().trim() },
+    });
+  }
+
+  findProprietarioById(id: number) {
+    return this.prisma.proprietarios.findUnique({
       where: { id },
     });
   }

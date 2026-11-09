@@ -2,18 +2,47 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-"""Dados públicos do corretor autenticado."""
-type CorretorAuthType {
+"""Situação da solicitação de cadastro do imóvel."""
+enum StatusImovel {
+  PENDENTE
+  APROVADO
+  RECUSADO
+}
+
+"""Tipo do imóvel no catálogo."""
+enum TipoImovel {
+  CASA
+  APARTAMENTO
+  TERRENO
+  COMERCIAL
+}
+
+"""Perfil de quem acessa o portal Habita."""
+enum PerfilAcesso {
+  ADMIN
+  CORRETOR
+  PROPRIETARIO
+}
+
+"""Perfil de acesso do corretor no Habita."""
+enum PerfilCorretor {
+  ADMIN
+  CORRETOR
+}
+
+"""Dados públicos do usuário autenticado."""
+type UsuarioAuthType {
   id: Int!
   nome: String!
   email: String!
+  perfil: PerfilAcesso!
 }
 
 """Resultado da autenticação JWT."""
 type LoginType {
   """Token JWT de acesso."""
   token: String!
-  corretor: CorretorAuthType!
+  usuario: UsuarioAuthType!
 }
 
 """Corretor cadastrado na Habita."""
@@ -21,6 +50,30 @@ type CorretorType {
   id: Int!
   nome: String!
   email: String!
+  perfil: PerfilCorretor!
+  createdAt: DateTime!
+}
+
+"""Proprietário cadastrado na Habita."""
+type ProprietarioType {
+  id: Int!
+  nome: String!
+  email: String!
+  telefone: String!
+  documento: String!
+  createdAt: DateTime!
+}
+
+"""Imóvel do catálogo Habita."""
+type ImovelType {
+  id: Int!
+  tipo: TipoImovel!
+  endereco: String!
+  valor: Float!
+  status: StatusImovel!
+  fotos: [String!]!
+  proprietarioId: Int!
+  proprietario: ProprietarioType!
   createdAt: DateTime!
 }
 
@@ -30,30 +83,60 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 scalar DateTime
 
 type Query {
-  """Lista os corretores cadastrados."""
+  """Lista os corretores cadastrados. Apenas o administrador."""
   corretores: [CorretorType!]!
+
+  """Lista os proprietários cadastrados. Disponível para administrador e corretor."""
+  proprietarios: [ProprietarioType!]!
+
+  """Lista o catálogo de imóveis. Administrador e corretor veem todos; o proprietário vê os próprios."""
+  imoveis: [ImovelType!]!
 }
 
 type Mutation {
-  """Autentica um corretor e retorna o token JWT."""
+  """Autentica administrador, corretor ou proprietário e retorna o token JWT."""
   login(
     """Credenciais de acesso."""
     data: LoginInput!
   ): LoginType!
 
-  """Cadastra um novo corretor."""
+  """Cadastra um novo corretor. Apenas o administrador."""
   criarCorretor(
     """Dados do corretor."""
     data: CreateCorretorInput!
   ): CorretorType!
+
+  """Cadastra um novo proprietário. Disponível para administrador e corretor."""
+  criarProprietario(
+    """Dados do proprietário."""
+    data: CreateProprietarioInput!
+  ): ProprietarioType!
+
+  """Cadastra um imóvel (aprovado) ou, no portal do proprietário, solicita o cadastro (pendente)."""
+  criarImovel(
+    """Dados do imóvel, incluindo no mínimo 2 fotos."""
+    data: CreateImovelInput!
+  ): ImovelType!
+
+  """Aprova a solicitação de cadastro de um imóvel. Administrador e corretor."""
+  aprovarImovel(
+    """Identificador do imóvel pendente."""
+    id: Int!
+  ): ImovelType!
+
+  """Recusa a solicitação de cadastro de um imóvel. Administrador e corretor."""
+  recusarImovel(
+    """Identificador do imóvel pendente."""
+    id: Int!
+  ): ImovelType!
 }
 
-"""Credenciais de acesso do corretor."""
+"""Credenciais de acesso ao portal Habita."""
 input LoginInput {
-  """E-mail do corretor."""
+  """E-mail do administrador, corretor ou proprietário."""
   email: String!
 
-  """Senha do corretor."""
+  """Senha de acesso."""
   senha: String!
 }
 
@@ -67,4 +150,40 @@ input CreateCorretorInput {
 
   """Senha que será armazenada com hash."""
   senha: String!
+}
+
+"""Dados para cadastro de um proprietário."""
+input CreateProprietarioInput {
+  """Nome completo do proprietário."""
+  nome: String!
+
+  """E-mail de acesso ao portal."""
+  email: String!
+
+  """Senha inicial do proprietário no portal."""
+  senha: String!
+
+  """Telefone de contato."""
+  telefone: String!
+
+  """CPF ou CNPJ do proprietário."""
+  documento: String!
+}
+
+"""Dados para cadastro ou solicitação de um imóvel."""
+input CreateImovelInput {
+  """Tipo do imóvel."""
+  tipo: TipoImovel!
+
+  """Endereço completo do imóvel."""
+  endereco: String!
+
+  """Valor do imóvel em reais."""
+  valor: Float!
+
+  """URLs das fotos locais. Mínimo de 2."""
+  fotos: [String!]!
+
+  """Proprietário do imóvel. Obrigatório para administrador e corretor."""
+  proprietarioId: Int
 }

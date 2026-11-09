@@ -1,4 +1,5 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { ArgonCrypto } from '@src/common/utils';
 import { CreateProprietarioInput } from '../contracts/inputs/create-proprietario.input';
 import { ProprietarioType } from '../contracts/types/proprietario.type';
 import { ProprietariosRepository } from '../repositories/proprietarios.repository';
@@ -18,13 +19,14 @@ export class ProprietariosService {
       throw new BadRequestException('Informe um CPF (11 dígitos) ou CNPJ (14 dígitos).');
     }
 
-    const [emailExistente, documentoExistente] = await Promise.all([
+    const [emailExistente, documentoExistente, corretorComEmail] = await Promise.all([
       this.repository.findByEmail(data.email),
       this.repository.findByDocumento(documento),
+      this.repository.findCorretorByEmail(data.email),
     ]);
 
-    if (emailExistente) {
-      throw new ConflictException('Já existe um proprietário cadastrado com este e-mail.');
+    if (emailExistente || corretorComEmail) {
+      throw new ConflictException('Já existe um usuário cadastrado com este e-mail.');
     }
 
     if (documentoExistente) {
@@ -34,6 +36,7 @@ export class ProprietariosService {
     return this.repository.create({
       nome: data.nome,
       email: data.email,
+      senha: await ArgonCrypto.hash(data.senha),
       telefone: data.telefone,
       documento,
     });

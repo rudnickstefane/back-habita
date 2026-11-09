@@ -11,28 +11,60 @@ enum PerfilCorretor {
   CORRETOR
 }
 
+enum TipoImovel {
+  CASA
+  APARTAMENTO
+  TERRENO
+  COMERCIAL
+}
+
+enum StatusImovel {
+  PENDENTE
+  APROVADO
+  RECUSADO
+}
+
 /// Corretor autenticável da plataforma Habita.
 model Corretores {
-  id        Int             @id @default(autoincrement())
-  nome      String          @db.VarChar(120)
-  email     String          @unique @db.VarChar(150)
-  senha     String          @db.VarChar(255)
-  perfil    PerfilCorretor  @default(CORRETOR)
-  createdAt DateTime        @default(now())
-  updatedAt DateTime?       @updatedAt
+  id        Int            @id @default(autoincrement())
+  nome      String         @db.VarChar(120)
+  email     String         @unique @db.VarChar(150)
+  senha     String         @db.VarChar(255)
+  perfil    PerfilCorretor @default(CORRETOR)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime?      @updatedAt
 
   @@index([email])
 }
 
-/// Dono de imóvel cadastrado na imobiliária.
+/// Dono de imóvel com acesso ao portal Habita.
 model Proprietarios {
   id         Int       @id @default(autoincrement())
   nome       String    @db.VarChar(120)
   email      String    @unique @db.VarChar(150)
+  senha      String    @db.VarChar(255)
   telefone   String    @db.VarChar(20)
   documento  String    @unique @db.VarChar(18)
   createdAt  DateTime  @default(now())
   updatedAt  DateTime? @updatedAt
+  imoveis    Imoveis[]
 
   @@index([nome])
+}
+
+/// Imóvel do catálogo, vinculado a um proprietário.
+model Imoveis {
+  id             Int           @id @default(autoincrement())
+  tipo           TipoImovel
+  endereco       String        @db.VarChar(250)
+  valor          Decimal       @db.Decimal(12, 2)
+  status         StatusImovel  @default(PENDENTE)
+  fotos          String[]
+  proprietarioId Int
+  proprietario   Proprietarios @relation(fields: [proprietarioId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime?     @updatedAt
+
+  @@index([proprietarioId])
+  @@index([status])
 }

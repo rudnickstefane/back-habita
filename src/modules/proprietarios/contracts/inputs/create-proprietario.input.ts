@@ -8,9 +8,14 @@ export class CreateProprietarioInput {
   @MinLength(2, { message: 'Informe o nome do proprietário.' })
   nome: string;
 
-  @Field(() => String, { description: 'E-mail de contato.' })
+  @Field(() => String, { description: 'E-mail de acesso ao portal.' })
   @IsEmail({}, { message: 'Informe um e-mail válido.' })
   email: string;
+
+  @Field(() => String, { description: 'Senha inicial do proprietário no portal.' })
+  @IsString()
+  @MinLength(6, { message: 'A senha deve ter pelo menos 6 caracteres.' })
+  senha: string;
 
   @Field(() => String, { description: 'Telefone de contato.' })
   @IsString()

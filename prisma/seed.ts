@@ -5,20 +5,34 @@ import { prismaAdapter } from './adapter';
 const prisma = new PrismaClient({ adapter: prismaAdapter });
 
 async function main() {
-  const email = 'admin@habita.com';
+  const adminEmail = 'admin@habita.com';
+  const senha = await ArgonCrypto.hash('habita123');
 
   await prisma.corretores.upsert({
-    where: { email },
+    where: { email: adminEmail },
     update: { perfil: 'ADMIN' },
     create: {
       nome: 'Administrador Habita',
-      email,
-      senha: await ArgonCrypto.hash('habita123'),
+      email: adminEmail,
+      senha,
       perfil: 'ADMIN',
     },
   });
 
+  await prisma.proprietarios.upsert({
+    where: { email: 'proprietario@habita.com' },
+    update: { senha },
+    create: {
+      nome: 'Maria Proprietária',
+      email: 'proprietario@habita.com',
+      senha,
+      telefone: '11988887777',
+      documento: '12345678901',
+    },
+  });
+
   console.log('Administrador disponível: admin@habita.com / habita123');
+  console.log('Proprietário disponível: proprietario@habita.com / habita123');
 }
 
 main()
