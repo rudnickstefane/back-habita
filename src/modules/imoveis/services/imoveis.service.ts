@@ -8,6 +8,7 @@ import { AuthUser } from '@src/auth/contracts/types/auth-user.type';
 import { StatusImovel, TipoImovel } from '@src/common/contracts/enums/imovel.enum';
 import { PerfilAcesso } from '@src/common/contracts/enums/perfil-acesso.enum';
 import { CreateImovelInput } from '../contracts/inputs/create-imovel.input';
+import { ImovelPublicoType } from '../contracts/types/imovel-publico.type';
 import { ImovelType } from '../contracts/types/imovel.type';
 import { ImoveisRepository } from '../repositories/imoveis.repository';
 
@@ -21,6 +22,21 @@ export class ImoveisService {
       : await this.repository.findByProprietario(user.id);
 
     return registros.map((imovel) => this.toType(imovel));
+  }
+
+  async listarDisponiveis(): Promise<ImovelPublicoType[]> {
+    const registros = await this.repository.findAprovados();
+
+    return registros.map((imovel) => ({
+      id: imovel.id,
+      tipo: imovel.tipo as TipoImovel,
+      endereco: imovel.endereco,
+      valor:
+        typeof imovel.valor === 'object' && imovel.valor && 'toNumber' in imovel.valor
+          ? imovel.valor.toNumber()
+          : Number(imovel.valor),
+      fotos: imovel.fotos,
+    }));
   }
 
   async criar(data: CreateImovelInput, user: AuthUser): Promise<ImovelType> {

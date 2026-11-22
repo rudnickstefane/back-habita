@@ -4,6 +4,7 @@ import { AuthUser } from '@src/auth/contracts/types/auth-user.type';
 import { GraphQLJWTGuard, StaffGuard } from '@src/auth/guards';
 import { CurrentUser } from '@src/common/decorators/current-user.decorator';
 import { CreateImovelInput } from '../contracts/inputs/create-imovel.input';
+import { ImovelPublicoType } from '../contracts/types/imovel-publico.type';
 import { ImovelType } from '../contracts/types/imovel.type';
 import { ImoveisService } from '../services/imoveis.service';
 
@@ -18,6 +19,13 @@ export class ImoveisResolver {
   @UseGuards(GraphQLJWTGuard)
   imoveis(@CurrentUser() user: AuthUser): Promise<ImovelType[]> {
     return this.service.listar(user);
+  }
+
+  @Query(() => [ImovelPublicoType], {
+    description: 'Lista os imóveis aprovados visíveis ao visitante, sem exigir login.',
+  })
+  imoveisDisponiveis(): Promise<ImovelPublicoType[]> {
+    return this.service.listarDisponiveis();
   }
 
   @Mutation(() => ImovelType, {

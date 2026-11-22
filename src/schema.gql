@@ -64,6 +64,36 @@ type ProprietarioType {
   createdAt: DateTime!
 }
 
+"""Situação do agendamento de visita."""
+enum StatusVisita {
+  PENDENTE
+  ACEITA
+  RECUSADA
+}
+
+"""Imóvel aprovado visível no catálogo público."""
+type ImovelPublicoType {
+  id: Int!
+  tipo: TipoImovel!
+  endereco: String!
+  valor: Float!
+  fotos: [String!]!
+}
+
+"""Visita agendada ou solicitada a um imóvel."""
+type VisitaType {
+  id: Int!
+  visitanteNome: String!
+  visitanteTelefone: String!
+  dataHora: DateTime!
+  status: StatusVisita!
+  imovelId: Int!
+  imovel: ImovelType!
+  corretorId: Int
+  corretor: CorretorType
+  createdAt: DateTime!
+}
+
 """Imóvel do catálogo Habita."""
 type ImovelType {
   id: Int!
@@ -91,6 +121,12 @@ type Query {
 
   """Lista o catálogo de imóveis. Administrador e corretor veem todos; o proprietário vê os próprios."""
   imoveis: [ImovelType!]!
+
+  """Lista os imóveis aprovados visíveis ao visitante, sem exigir login."""
+  imoveisDisponiveis: [ImovelPublicoType!]!
+
+  """Lista as visitas. Disponível para administrador e corretor."""
+  visitas: [VisitaType!]!
 }
 
 type Mutation {
@@ -129,6 +165,30 @@ type Mutation {
     """Identificador do imóvel pendente."""
     id: Int!
   ): ImovelType!
+
+  """Visitante solicita uma visita a um imóvel aprovado. Fica pendente até o corretor decidir."""
+  solicitarVisita(
+    """Nome, telefone, data, horário e imóvel."""
+    data: CreateVisitaInput!
+  ): VisitaType!
+
+  """Corretor ou administrador reserva uma visita já aceita na agenda."""
+  agendarVisita(
+    """Nome, telefone, data, horário e imóvel."""
+    data: CreateVisitaInput!
+  ): VisitaType!
+
+  """Aceita uma solicitação de visita pendente."""
+  aceitarVisita(
+    """Identificador da visita pendente."""
+    id: Int!
+  ): VisitaType!
+
+  """Recusa uma solicitação de visita pendente."""
+  recusarVisita(
+    """Identificador da visita pendente."""
+    id: Int!
+  ): VisitaType!
 }
 
 """Credenciais de acesso ao portal Habita."""
@@ -186,4 +246,19 @@ input CreateImovelInput {
 
   """Proprietário do imóvel. Obrigatório para administrador e corretor."""
   proprietarioId: Int
+}
+
+"""Dados para solicitar ou reservar uma visita."""
+input CreateVisitaInput {
+  """Imóvel a ser visitado."""
+  imovelId: Int!
+
+  """Nome do visitante."""
+  visitanteNome: String!
+
+  """Telefone do visitante."""
+  visitanteTelefone: String!
+
+  """Data e horário da visita."""
+  dataHora: DateTime!
 }

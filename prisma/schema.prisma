@@ -24,6 +24,12 @@ enum StatusImovel {
   RECUSADO
 }
 
+enum StatusVisita {
+  PENDENTE
+  ACEITA
+  RECUSADA
+}
+
 /// Corretor autenticável da plataforma Habita.
 model Corretores {
   id        Int            @id @default(autoincrement())
@@ -33,21 +39,22 @@ model Corretores {
   perfil    PerfilCorretor @default(CORRETOR)
   createdAt DateTime       @default(now())
   updatedAt DateTime?      @updatedAt
+  visitas   Visitas[]
 
   @@index([email])
 }
 
 /// Dono de imóvel com acesso ao portal Habita.
 model Proprietarios {
-  id         Int       @id @default(autoincrement())
-  nome       String    @db.VarChar(120)
-  email      String    @unique @db.VarChar(150)
-  senha      String    @db.VarChar(255)
-  telefone   String    @db.VarChar(20)
-  documento  String    @unique @db.VarChar(18)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime? @updatedAt
-  imoveis    Imoveis[]
+  id        Int       @id @default(autoincrement())
+  nome      String    @db.VarChar(120)
+  email     String    @unique @db.VarChar(150)
+  senha     String    @db.VarChar(255)
+  telefone  String    @db.VarChar(20)
+  documento String    @unique @db.VarChar(18)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  imoveis   Imoveis[]
 
   @@index([nome])
 }
@@ -64,7 +71,28 @@ model Imoveis {
   proprietario   Proprietarios @relation(fields: [proprietarioId], references: [id])
   createdAt      DateTime      @default(now())
   updatedAt      DateTime?     @updatedAt
+  visitas        Visitas[]
 
   @@index([proprietarioId])
   @@index([status])
+}
+
+/// Visita a um imóvel, solicitada pelo visitante ou reservada pelo corretor.
+model Visitas {
+  id                 Int          @id @default(autoincrement())
+  visitanteNome      String       @db.VarChar(120)
+  visitanteTelefone  String       @db.VarChar(20)
+  dataHora           DateTime
+  status             StatusVisita @default(PENDENTE)
+  imovelId           Int
+  imovel             Imoveis      @relation(fields: [imovelId], references: [id])
+  corretorId         Int?
+  corretor           Corretores?  @relation(fields: [corretorId], references: [id])
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime?    @updatedAt
+
+  @@index([imovelId])
+  @@index([corretorId])
+  @@index([status])
+  @@index([dataHora])
 }

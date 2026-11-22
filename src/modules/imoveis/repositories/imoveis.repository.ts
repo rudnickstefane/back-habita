@@ -30,6 +30,13 @@ export class ImoveisRepository {
     });
   }
 
+  findAprovados() {
+    return this.prisma.imoveis.findMany({
+      where: { status: 'APROVADO' },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   findByProprietario(proprietarioId: number) {
     return this.prisma.imoveis.findMany({
       where: { proprietarioId },
